@@ -1,0 +1,630 @@
+#include <stdio.h>        //input-output library function
+#include <stdlib.h>       //for dynamic memory allocation
+#include <string.h>      //string library function
+#include <time.h>       // Measuring Time Execution function
+
+#define MAX 500          // maximum number of students we can store
+#define NAME_LEN 50
+
+//Array of Structure
+struct Student {
+    int id;
+    char name[NAME_LEN];
+    float marks;
+    char grade;
+};
+
+struct Student students[MAX];
+int total = 0;
+
+long comp = 0;
+long swapCount = 0;
+
+//function declarations
+void showMenu();
+void clearBuffer();
+
+void manualInput();
+void generateRandom();
+void displayAll(struct Student arr[], int n);
+char getGrade(float m);
+
+int askField();
+int askOrder();
+int biggerValue(struct Student a, struct Student b, int field, int order);
+
+void bubbleSort(struct Student arr[], int n, int field, int order);
+void selectionSort(struct Student arr[], int n, int field, int order);
+void insertionSort(struct Student arr[], int n, int field, int order);
+void mergeSort(struct Student arr[], int left, int right, int field, int order);
+void merge(struct Student arr[], int left, int mid, int right, int field, int order);
+void quickSort(struct Student arr[], int low, int high, int field, int order);
+int partition(struct Student arr[], int low, int high, int field, int order);
+void heapSort(struct Student arr[], int n, int field, int order);
+void heapify(struct Student arr[], int n, int i, int field, int order);
+
+void sortMenu(int choice);
+void performanceCompare();
+void binarySearchMenu();
+
+void saveToFile();
+void loadFromFile();
+
+
+// MAIN FUNCTION
+int main() {
+    srand(time(NULL));
+
+    int choice;
+    do {
+        showMenu();
+        printf("Enter your choice (1-14): ");
+        scanf("%d", &choice);
+        clearBuffer();
+
+        if (choice == 1) manualInput();
+        else if (choice == 2) generateRandom();
+        else if (choice == 3) displayAll(students, total);
+        else if (choice >= 4 && choice <= 9) sortMenu(choice);
+        else if (choice == 10) performanceCompare();
+        else if (choice == 11) binarySearchMenu();
+        else if (choice == 12) saveToFile();
+        else if (choice == 13) loadFromFile();
+        else if (choice == 14) {
+            printf("\n=========================");
+            printf("\nThank You.......\n");
+            printf("Student Record Management System\n");
+            printf("\nCredits\n");
+            printf("\nMD. BAYEZID HOSSAIN\n");
+            printf("\nFacebook Link \nhttps://www.facebook.com/md.bayezid.94849\n");
+            printf("\nLinked In Link \nhttps://www.linkedin.com/in/md-bayezid-hossain-227624391/ \n");
+            printf("\nGood Bye!\n");
+        }
+        else {
+            printf("Invalid choice! Please enter a number from 1 to 14.\n");
+        }
+
+    } while (choice != 14);
+
+    return 0;
+}
+
+//Output Show
+void showMenu() {
+    printf("\n==================================================\n");
+    printf("      STUDENT RECORD MANAGEMENT SYSTEM\n");
+    printf("==================================================\n");
+    printf("1. Manual Input\n");
+    printf("2. Generate Random Data\n");
+    printf("3. Display Records\n");
+    printf("\n4. Bubble Sort\n");
+    printf("5. Selection Sort\n");
+    printf("6. Insertion Sort\n");
+    printf("7. Merge Sort\n");
+    printf("8. Quick Sort\n");
+    printf("9. Heap Sort\n");
+    printf("10.Performance Comparison\n");
+    printf("\n11.Binary Search (by ID)\n");
+    printf("12.Save Records to File\n");
+    printf("13.Load Records from File\n");
+    printf("\n14.Exit\n");
+    printf("==================================================\n");
+}
+
+void clearBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+// decides the grade based on marks
+char getGrade(float m) {
+    if (m >= 80) return 'A';
+    else if (m >= 70) return 'B';
+    else if (m >= 60) return 'C';
+    else if (m >= 50) return 'D';
+    else return 'F';
+}
+
+//Input for option 1
+void manualInput() {
+    int n;
+    printf("Enter number of students to add: ");
+    scanf("%d", &n);
+    clearBuffer();
+
+    if (total + n > MAX) {
+        printf("Cannot add that many, storage limit is %d.\n", MAX);
+        return;
+    }
+
+    int i;
+    for (i = 0; i < n; i++) {
+        printf("\n--- Student %d ---\n", i + 1);
+
+        printf("ID: ");
+        scanf("%d", &students[total].id);
+        clearBuffer();
+
+        printf("Name: ");
+        scanf(" %49[^\n]", students[total].name);
+        clearBuffer();
+
+        printf("Marks: ");
+        scanf("%f", &students[total].marks);
+        clearBuffer();
+
+        students[total].grade = getGrade(students[total].marks);
+        printf("Grade assigned: %c\n", students[total].grade);
+
+        total++;
+    }
+    printf("\n%d student(s) added. Total records now: %d\n", n, total);
+}
+
+//Input for option 2
+void generateRandom() {
+    printf("\nChoose dataset size:\n");
+    printf("1. Small (20)\n2. Medium (50)\n3. Large (100)\n4. Custom\n");
+    printf("Enter choice: ");
+    int opt;
+    scanf("%d", &opt);
+    clearBuffer();
+
+    int n;
+    if (opt == 1) n = 20;
+    else if (opt == 2) n = 50;
+    else if (opt == 3) n = 100;
+    else {
+        printf("Enter custom size: ");
+        scanf("%d", &n);
+        clearBuffer();
+    }
+
+    if (total + n > MAX) {
+        printf("Cannot generate that many, storage limit is %d.\n", MAX);
+        return;
+    }
+
+    printf("Generating random data...\n");
+    int i;
+    for (i = 0; i < n; i++) {
+        students[total].id = 1000 + total;
+        sprintf(students[total].name, "Student%d", total + 1);
+        students[total].marks = (rand() % 10000) / 100.0;   /* 0.00 to 99.99 */
+        students[total].grade = getGrade(students[total].marks);
+        total++;
+    }
+    printf("Done. %d records generated. Total records: %d\n", n, total);
+}
+
+//Input for option 3
+void displayAll(struct Student arr[], int n) {
+    if (n == 0) {
+        printf("\nNo records found. Please add data first.\n");
+        return;
+    }
+    printf("\n%-8s %-20s %-10s %-6s\n", "ID", "Name", "Marks", "Grade");
+    printf("--------------------------------------------------\n");
+    int i;
+    for (i = 0; i < n; i++) {
+        printf("%-8d %-20s %-10.2f %-6c\n", arr[i].id, arr[i].name, arr[i].marks, arr[i].grade);
+    }
+    printf("Total Students: %d\n", n);
+}
+
+// sort choosing 1st step
+int askField() {
+    printf("\nSort by:\n1. ID\n2. Marks\n");
+    printf("Enter choice: ");
+    int f;
+    scanf("%d", &f);
+    clearBuffer();
+    return f;
+}
+
+// sort choosing 2nd step
+int askOrder() {
+    printf("\nSelect order:\n1. Ascending\n2. Descending\n");
+    printf("Enter choice: ");
+    int o;
+    scanf("%d", &o);
+    clearBuffer();
+    return o;
+}
+
+
+int biggerValue(struct Student a, struct Student b, int field, int order) {
+    comp++;
+
+    float valA, valB;
+    if (field == 1) {
+        valA = a.id;
+        valB = b.id;
+    }
+    else {
+        valA = a.marks;
+        valB = b.marks;
+    }
+
+    if (order == 1) {
+        // ascending order -> a should come after b if a is bigger
+        if (valA > valB) return 1;
+        else return 0;
+    }
+    else {
+        //descending order -> a should come after b if a is smaller
+        if (valA < valB) return 1;
+        else return 0;
+    }
+}
+
+
+//sorting algorithms
+
+void bubbleSort(struct Student arr[], int n, int field, int order) {
+    int i, j;
+    struct Student temp;
+    for (i = 0; i < n - 1; i++) {
+        for (j = 0; j < n - 1 - i; j++) {
+            if (biggerValue(arr[j], arr[j + 1], field, order)) {
+                temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+                swapCount++;
+            }
+        }
+    }
+}
+
+void selectionSort(struct Student arr[], int n, int field, int order) {
+    int i, j, pos;
+    struct Student temp;
+    for (i = 0; i < n - 1; i++) {
+        pos = i;
+        for (j = i + 1; j < n; j++) {
+            if (biggerValue(arr[pos], arr[j], field, order)) {
+                pos = j;
+            }
+        }
+        if (pos != i) {
+            temp = arr[i];
+            arr[i] = arr[pos];
+            arr[pos] = temp;
+            swapCount++;
+        }
+    }
+}
+
+void insertionSort(struct Student arr[], int n, int field, int order) {
+    int i, j;
+    struct Student key;
+    for (i = 1; i < n; i++) {
+        key = arr[i];
+        j = i - 1;
+        while (j >= 0 && biggerValue(arr[j], key, field, order)) {
+            arr[j + 1] = arr[j];
+            swapCount++;
+            j--;
+        }
+        arr[j + 1] = key;
+    }
+}
+
+void merge(struct Student arr[], int left, int mid, int right, int field, int order) {
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+
+    struct Student L[n1], R[n2];
+    int i, j;
+
+    for (i = 0; i < n1; i++) L[i] = arr[left + i];
+    for (j = 0; j < n2; j++) R[j] = arr[mid + 1 + j];
+
+    i = 0; j = 0;
+    int k = left;
+
+    while (i < n1 && j < n2) {
+        // pick whichever should come first
+        if (!biggerValue(L[i], R[j], field, order)) {
+            arr[k] = L[i];
+            i++;
+        } else {
+            arr[k] = R[j];
+            j++;
+        }
+        swapCount++;
+        k++;
+    }
+    while (i < n1) {
+        arr[k] = L[i];
+        i++; k++;
+        swapCount++;
+    }
+    while (j < n2) {
+        arr[k] = R[j];
+        j++; k++;
+        swapCount++;
+    }
+}
+
+void mergeSort(struct Student arr[], int left, int right, int field, int order) {
+    if (left < right) {
+        int mid = (left + right) / 2;
+        mergeSort(arr, left, mid, field, order);
+        mergeSort(arr, mid + 1, right, field, order);
+        merge(arr, left, mid, right, field, order);
+    }
+}
+
+int partition(struct Student arr[], int low, int high, int field, int order) {
+    struct Student pivot = arr[high];
+    int i = low - 1;
+    int j;
+    struct Student temp;
+
+    for (j = low; j < high; j++) {
+        // if arr[j] should come before the pivot, move it to the left side
+        if (!biggerValue(arr[j], pivot, field, order)) {
+            i++;
+            temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+            swapCount++;
+        }
+    }
+    temp = arr[i + 1];
+    arr[i + 1] = arr[high];
+    arr[high] = temp;
+    swapCount++;
+
+    return i + 1;
+}
+
+void quickSort(struct Student arr[], int low, int high, int field, int order) {
+    if (low < high) {
+        int p = partition(arr, low, high, field, order);
+        quickSort(arr, low, p - 1, field, order);
+        quickSort(arr, p + 1, high, field, order);
+    }
+}
+
+// for heap sort: ascending -> use a max heap, descending -> use a min heap
+void heapify(struct Student arr[], int n, int i, int field, int order) {
+    int biggest = i;
+    int left = 2 * i + 1;
+    int right = 2 * i + 2;
+
+    float vBig, vChild;
+
+    if (left < n) {
+        comp++;
+        vBig = (field == 1) ? arr[biggest].id : arr[biggest].marks;
+        vChild = (field == 1) ? arr[left].id : arr[left].marks;
+        if (order == 1) { if (vChild > vBig) biggest = left; }
+        else { if (vChild < vBig) biggest = left; }
+    }
+
+    if (right < n) {
+        comp++;
+        vBig = (field == 1) ? arr[biggest].id : arr[biggest].marks;
+        vChild = (field == 1) ? arr[right].id : arr[right].marks;
+        if (order == 1) { if (vChild > vBig) biggest = right; }
+        else { if (vChild < vBig) biggest = right; }
+    }
+
+    if (biggest != i) {
+        struct Student temp = arr[i];
+        arr[i] = arr[biggest];
+        arr[biggest] = temp;
+        swapCount++;
+        heapify(arr, n, biggest, field, order);
+    }
+}
+
+void heapSort(struct Student arr[], int n, int field, int order) {
+    int i;
+    for (i = n / 2 - 1; i >= 0; i--) {
+        heapify(arr, n, i, field, order);
+    }
+    for (i = n - 1; i > 0; i--) {
+        struct Student temp = arr[0];
+        arr[0] = arr[i];
+        arr[i] = temp;
+        swapCount++;
+        heapify(arr, i, 0, field, order);
+    }
+}
+
+//running a sort from the menu
+void sortMenu(int choice) {
+    if (total == 0) {
+        printf("\nNo records found. Please add data first.\n"); //At first we should fulfill option 1 or 2
+        return;
+    }
+
+    int field = askField();
+    int order = askOrder();
+
+    comp = 0;
+    swapCount = 0;
+
+    clock_t start = clock();
+
+    if (choice == 4) bubbleSort(students, total, field, order);
+    else if (choice == 5) selectionSort(students, total, field, order);
+    else if (choice == 6) insertionSort(students, total, field, order);
+    else if (choice == 7) mergeSort(students, 0, total - 1, field, order);
+    else if (choice == 8) quickSort(students, 0, total - 1, field, order);
+    else if (choice == 9) heapSort(students, total, field, order);
+
+    clock_t end = clock();
+    double timeTaken = (double)(end - start) / CLOCKS_PER_SEC;
+
+    printf("\nSorting Completed.......\n");
+    printf("Total Comparisons: %ld\n", comp);
+    printf("Total Swaps: %ld\n", swapCount);
+    printf("Execution Time: %.6f sec\n", timeTaken);
+
+    displayAll(students, total);
+}
+
+//performance comparison with time
+void performanceCompare() {
+    if (total == 0) {
+        printf("\nNo records found. Please add data first.\n");
+        return;
+    }
+
+    int field = askField();
+    int order = askOrder();
+
+    struct Student randomData[MAX], sortedData[MAX], reverseData[MAX];
+    int i;
+    for (i = 0; i < total; i++) {
+        randomData[i] = students[i];
+        sortedData[i] = students[i];
+        reverseData[i] = students[i];
+    }
+
+    // making sortedData actually sorted ascending by the chosen field
+    comp = 0; swapCount = 0;
+    quickSort(sortedData, 0, total - 1, field, 1);
+
+    // making reverseData the exact opposite (descending)
+    for (i = 0; i < total; i++) reverseData[i] = sortedData[i];
+    int left = 0, right = total - 1;
+    struct Student t;
+    while (left < right) {
+        t = reverseData[left];
+        reverseData[left] = reverseData[right];
+        reverseData[right] = t;
+        left++; right--;
+    }
+
+    char *names[] = {"Bubble", "Selection", "Insertion", "Merge", "Quick", "Heap"};
+    char *labels[] = {"RANDOM DATA", "ALREADY SORTED DATA", "REVERSE SORTED DATA"};
+
+    struct Student *sets[3];
+    sets[0] = randomData;
+    sets[1] = sortedData;
+    sets[2] = reverseData;
+
+    int d, a;
+    for (d = 0; d < 3; d++) {
+        printf("\n==== %s ====\n", labels[d]);
+        printf("%-12s %-14s %-10s %-10s\n", "Algorithm", "Comparisons", "Swaps", "Time(s)");
+
+        for (a = 0; a < 6; a++) {
+            // copy the data fresh each time so one algorithm's sorting doesn't affect the next algorithm's test
+            struct Student temp[MAX];
+            for (i = 0; i < total; i++) temp[i] = sets[d][i];
+
+            comp = 0;
+            swapCount = 0;
+            clock_t start = clock();
+
+            if (a == 0) bubbleSort(temp, total, field, order);
+            else if (a == 1) selectionSort(temp, total, field, order);
+            else if (a == 2) insertionSort(temp, total, field, order);
+            else if (a == 3) mergeSort(temp, 0, total - 1, field, order);
+            else if (a == 4) quickSort(temp, 0, total - 1, field, order);
+            else if (a == 5) heapSort(temp, total, field, order);
+
+            clock_t end = clock();
+            double t2 = (double)(end - start) / CLOCKS_PER_SEC;
+
+            printf("%-12s %-14ld %-10ld %-10.6f\n", names[a], comp, swapCount, t2);
+        }
+    }
+    printf("\n(Compare the tables above to see which algorithm works best on each type of data)\n");
+}
+
+//binary search
+void binarySearchMenu() {
+    if (total == 0) {
+        printf("\nNo records found. Please add data first.\n");
+        return;
+    }
+
+    printf("\nSorting by ID first (binary search needs sorted data)...\n");
+    comp = 0; swapCount = 0;
+    quickSort(students, 0, total - 1, 1, 1);
+
+    int target;
+    printf("Enter Student ID to search: ");
+    scanf("%d", &target);
+    clearBuffer();
+
+    comp = 0;
+    int low = 0, high = total - 1, found = -1;
+
+    while (low <= high) {
+        int mid = (low + high) / 2;
+        comp++;
+        if (students[mid].id == target) {
+            found = mid;
+            break;
+        }
+        comp++;
+        if (students[mid].id < target) low = mid + 1;
+        else high = mid - 1;
+    }
+
+    if (found != -1) {
+        printf("\nStudent Found!\n");
+        printf("ID: %d\n", students[found].id);
+        printf("Name: %s\n", students[found].name);
+        printf("Marks: %.2f\n", students[found].marks);
+        printf("Grade: %c\n", students[found].grade);
+    } else {
+        printf("\nStudent not found!\n");
+    }
+    printf("Comparisons made: %ld\n", comp);
+}
+
+
+//file handling for option 12 and 13
+void saveToFile() {
+    if (total == 0) {
+        printf("\nNo records to save.\n");
+        return;
+    }
+
+    FILE *fp = fopen("students_data.csv", "w");
+    if (fp == NULL) {
+        printf("Error opening file for writing.\n");
+        return;
+    }
+
+    fprintf(fp, "%d\n", total);
+    int i;
+    for (i = 0; i < total; i++) {
+        fprintf(fp, "%d,%s,%.2f,%c\n", students[i].id, students[i].name, students[i].marks, students[i].grade);
+    }
+    fclose(fp);
+    printf("\n%d record(s) saved to students_data.csv\n", total);
+}
+
+void loadFromFile() {
+    FILE *fp = fopen("students_data.csv", "r");
+    if (fp == NULL) {
+        printf("\nFile not found. Please save records first.\n");
+        return;
+    }
+
+    int n;
+    fscanf(fp, "%d\n", &n);
+
+    total = 0;
+    char line[200];
+    while (total < n && fgets(line, sizeof(line), fp) != NULL) {
+        char gradeStr[5];
+        sscanf(line, "%d,%49[^,],%f,%4s",
+               &students[total].id, students[total].name, &students[total].marks, gradeStr);
+        students[total].grade = gradeStr[0];
+        total++;
+    }
+    fclose(fp);
+    printf("\n%d record(s) loaded from students_data.csv\n", total);
+}
+
